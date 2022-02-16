@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error en registro</title>
+</head>
+<body>
+    <h1>Lo sentimos, hubo un error con la ejecución del programa</h1>
+    <br>
+    <p>Mensaje:</p>
+    <p th:text="${error}"></p>
+    <br>
+    <button><a href="/">Volver a la pagina de inicio</a></button>
+    <button><a href="/usuario/registro">Volver a la pantalla de registro</a></button>
+</body>
+</html>

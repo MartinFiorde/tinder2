@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  lang="en"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista Usuarios</title>
+  </head>
+  <body>
+    <div>Lista completa de usuarios</div>
+      <table class="table table-dark">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Nombre</th>
+            <th scope="col">Apellido</th>
+            <th scope="col">Email</th>
+          </tr>
+        </thead>
+        <tbody th:each="usuario : ${usuarios}">
+          <tr>
+            <th th:text="${usuario.id}" scope="row"></th>
+            <td th:text="${usuario.nombre}"></td>
+            <td th:text="${usuario.apellido}"></td>
+            <td th:text="${usuario.mail}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

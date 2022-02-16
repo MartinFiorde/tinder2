@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  lang="en"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro Usuario</title>
+  </head>
+  <body>
+    <h1>Carga de Usuario</h1>
+
+    <form
+      th:action="@{/usuario/registro}"
+      th:object="${usuario}"
+      enctype="multipart/form-data"
+      method="POST"
+    >
+      <p style="color: red" th:if="${error != null}" th:text="${error}"></p>
+      <input type="text" th:field="*{nombre}" placeholder="Nombre" />
+      <br />
+      <input type="text" th:field="*{apellido}" placeholder="Apellido" />
+      <br />
+      <input type="email" th:field="*{mail}" placeholder="Email" />
+      <br />
+      <input type="password" th:field="*{clave}" placeholder="Contraseña" />
+      <br />
+      <input type="password" name="clave2" placeholder="Repita contraseña" />
+      <br />
+      <input type="file" name="foto2" />
+      <br />
+      <select name="idZona2">
+        <option th:each="zona : ${zonas}" th:value="${zona.id}" th:text="${zona.nombre}" ></option>
+      </select>
+
+      <br />
+      <input type="submit" value="Aceptar" />
+    </form>
+  </body>
+</html>

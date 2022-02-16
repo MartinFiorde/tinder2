@@ -16,9 +16,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import tinder2.entidades.Mascota;
 import tinder2.entidades.Usuario;
 import tinder2.errores.ErrorServicio;
 import tinder2.repositorios.UsuarioRepositorio;
+import tinder2.repositorios.ZonaRepositorio;
 
 @Service
 
@@ -28,18 +30,21 @@ public class UsuarioServicio implements UserDetailsService {
     private UsuarioRepositorio usuarioRepositorio;
     private FotoServicio fotoServicio;
     private NotificacionServicio notificacionServicio;
+    private ZonaRepositorio zonaRepositorio;
 
     @Autowired
-    public UsuarioServicio(UsuarioRepositorio usuarioRepositorio, FotoServicio fotoServicio, NotificacionServicio notificacionServicio) {
+    public UsuarioServicio(UsuarioRepositorio usuarioRepositorio, FotoServicio fotoServicio, NotificacionServicio notificacionServicio, ZonaRepositorio zonaRepositorio) {
         this.usuarioRepositorio = usuarioRepositorio;
         this.fotoServicio = fotoServicio;
         this.notificacionServicio = notificacionServicio;
+        this.zonaRepositorio = zonaRepositorio;
     }
 
     @Transactional
-    public void registrar(String nombre, String apellido, String mail, String clave, MultipartFile archivo) throws ErrorServicio {
-        validar(nombre, apellido, mail, clave);
+    public void registrar(String nombre, String apellido, String mail, String clave, String clave2, String idZona, MultipartFile archivo) throws ErrorServicio {
+        validar(nombre, apellido, mail, clave, clave2);
         Usuario usuario = new Usuario();
+        usuario.setAlta(new Date());
         usuario.setNombre(nombre);
         usuario.setApellido(apellido);
         usuario.setMail(mail);
@@ -47,14 +52,14 @@ public class UsuarioServicio implements UserDetailsService {
         String encriptada = new BCryptPasswordEncoder().encode(clave);
         usuario.setClave(encriptada);
         usuario.setFoto(fotoServicio.guardar(archivo));
-        usuario.setAlta(new Date());
+        usuario.setZona(zonaRepositorio.getById(idZona));
         usuarioRepositorio.save(usuario);
 //        notificacionServicio.enviar("Bienvenidos al Tinder de Mascotas!", "Tinder de Mascota", usuario.getMail());
     }
 
     @Transactional
-    public void modificar(String id, String nombre, String apellido, String mail, String clave, MultipartFile archivo) throws ErrorServicio {
-        validar(nombre, apellido, mail, clave);
+    public void modificar(String id, String nombre, String apellido, String mail, String clave, String clave2, String idZona, MultipartFile archivo) throws ErrorServicio {
+        validar(nombre, apellido, mail, clave, clave2);
         Optional<Usuario> respuesta = usuarioRepositorio.findById(id);
 
         if (respuesta.isPresent()) {
@@ -102,7 +107,7 @@ public class UsuarioServicio implements UserDetailsService {
         }
     }
 
-    private void validar(String nombre, String apellido, String mail, String clave) throws ErrorServicio {
+    private void validar(String nombre, String apellido, String mail, String clave, String clave2) throws ErrorServicio {
         if (nombre == null || nombre.isEmpty()) {
             throw new ErrorServicio("El nombre del usuario no puede ser nulo.");
         }
@@ -118,6 +123,10 @@ public class UsuarioServicio implements UserDetailsService {
         if (clave == null || clave.isEmpty() || clave.length() <= 6) {
             throw new ErrorServicio("La clave del usuario debe tener al menos 6 caracteres.");
         }
+         if (!clave2.equals(clave)) {
+                throw new ErrorServicio("Las contraseñas no coinciden");
+            }
+        
     }
 
     @Override
@@ -134,5 +143,13 @@ public class UsuarioServicio implements UserDetailsService {
         } else {
             return null;
         }
+    }
+    
+       public Usuario validarIdUsuario(String id) throws ErrorServicio {
+        Optional<Usuario> rta = usuarioRepositorio.findById(id);
+        if (!rta.isPresent()) {
+            throw new ErrorServicio("No se encontro el usuario solicitado.");
+        }
+        return rta.get();
     }
 }

@@ -19,20 +19,25 @@ public class MascotaServicio {
     private MascotaRepositorio mascotaRepositorio;
     private UsuarioRepositorio usuarioRepositorio;
     private FotoServicio fotoServicio;
+    private UsuarioServicio usuarioServicio;
 
     @Autowired
-    public MascotaServicio(MascotaRepositorio mascotaRepositorio, UsuarioRepositorio usuarioRepositorio, FotoServicio fotoServicio) {
+    public MascotaServicio(MascotaRepositorio mascotaRepositorio, UsuarioRepositorio usuarioRepositorio, FotoServicio fotoServicio, UsuarioServicio usuarioServicio) {
         this.mascotaRepositorio = mascotaRepositorio;
         this.usuarioRepositorio = usuarioRepositorio;
         this.fotoServicio = fotoServicio;
+        this.usuarioServicio = usuarioServicio;
     }
 
     @Transactional
-    public void agregar(String id, String idUsuario, String nombre, Sexo sexo, MultipartFile archivo) throws ErrorServicio {
+    public void agregar(String idUsuario, String nombre, Sexo sexo, MultipartFile archivo) throws ErrorServicio {
         validar(nombre, sexo);
-        Mascota mascota = validarIdMascota(id);
+        usuarioServicio.validarIdUsuario(idUsuario);
+        Mascota mascota = new Mascota();
+        mascota.setAlta(new Date());
         mascota.setNombre(nombre);
         mascota.setSexo(sexo);
+        mascota.setUsuario(usuarioRepositorio.getById(idUsuario));
         mascota.setFoto(fotoServicio.guardar(archivo));
         mascotaRepositorio.save(mascota);
     }
@@ -47,13 +52,12 @@ public class MascotaServicio {
     }
 
     @Transactional
-    public void modificar(String idUsuario, String nombre, Sexo sexo, MultipartFile archivo) throws ErrorServicio {
-        Usuario usuario = usuarioRepositorio.findById(idUsuario).get();
+    public void modificar(String id, String idUsuario, String nombre, Sexo sexo, MultipartFile archivo) throws ErrorServicio {
+        Mascota mascota = validarIdMascota(id);
         validar(nombre, sexo);
-        Mascota mascota = new Mascota();
+        Usuario usuario = validarDueño(mascota, idUsuario);
         mascota.setNombre(nombre);
         mascota.setSexo(sexo);
-        mascota.setAlta(new Date());
         String idFoto = null;
         if (mascota.getFoto() != null) {
             idFoto = mascota.getFoto().getId();
@@ -71,10 +75,11 @@ public class MascotaServicio {
         }
     }
 
-    public void validarDueño(Mascota mascota, String idUsuario) throws ErrorServicio {
+    public Usuario validarDueño(Mascota mascota, String idUsuario) throws ErrorServicio {
         if (!mascota.getUsuario().getId().equals(idUsuario)) {
             throw new ErrorServicio("El usuario no tiene permiso para editar la mascota solicitada.");
         }
+        return usuarioRepositorio.getById(idUsuario);
     }
 
     public Mascota validarIdMascota(String id) throws ErrorServicio {
